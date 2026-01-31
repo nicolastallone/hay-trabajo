@@ -59,10 +59,9 @@ class Application(db.Model):
 
 
 # --- RUTAS ---
-@app.route('/')
+@app.route("/")
 def home():
-    # Home actual apunta a registro (como lo tenías)
-    return render_template('registro.html')
+    return render_template("login.html")
 
 
 @app.route('/login')
@@ -269,3 +268,4 @@ if __name__ == '__main__':
 
     # Para Render / producción
     app.run(host="0.0.0.0", port=5000)
+
