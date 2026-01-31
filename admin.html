@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>HAY TRABAJO - Admin</title>
+    <style>
+        body { font-family: 'Tahoma', sans-serif; background: #eee; padding: 20px; }
+        .logo-central { text-align: center; font-size: 30px; font-weight: bold; color: #FF8C42; margin-bottom: 20px; }
+        .stats { display: flex; gap: 20px; margin-bottom: 20px; }
+        .stat-card { background: #FF8C42; color: white; padding: 20px; border-radius: 10px; flex: 1; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 15px; border: 1px solid #ddd; text-align: left; }
+        th { background: #000; color: #fff; }
+        .btn { padding: 8px 12px; border-radius: 5px; text-decoration: none; font-size: 12px; font-weight: bold; color: white; }
+    </style>
+</head>
+<body>
+    <div class="logo-central">HAY TRABAJO</div>
+    
+    <div class="stats">
+        <div class="stat-card"><h2>{{ c_count }}</h2><p>COMERCIOS</p></div>
+        <div class="stat-card"><h2>{{ e_count }}</h2><p>EMPLEADOS</p></div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th><th>TIPO</th><th>NOMBRE</th><th>EMAIL</th><th>WA</th><th>SUSCRIPCIÓN</th><th>ACCIONES</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.tipo.upper() }}</td>
+                <td>{{ u.nombre_completo }}</td>
+                <td>{{ u.email }}</td>
+                <td>{{ u.whatsapp }}</td>
+                <td style="color: {% if u.esta_suscrito %}green{% else %}red{% endif %}; font-weight:bold;">
+                    {% if u.esta_suscrito %}ACTIVA{% else %}INACTIVA{% endif %}
+                </td>
+                <td>
+                    <a href="/admin_accion/{{ u.id }}/toggle" class="btn" style="background:blue;">CAMBIAR ESTADO</a>
+                    <a href="/admin_accion/{{ u.id }}/eliminar" class="btn" style="background:red;" onclick="return confirm('¿Borrar usuario?')">ELIMINAR</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

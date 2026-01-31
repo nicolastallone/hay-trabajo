@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>HAY TRABAJO - Comercio</title>
+    <style>
+        body { font-family: 'Tahoma', sans-serif; background: #FF8C42; color: #333; margin: 0; }
+        .nav { background: #000; color: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .logo-central { text-align: center; font-size: 30px; font-weight: bold; color: white; padding: 20px; text-shadow: 2px 2px #000; }
+        .container { max-width: 900px; margin: auto; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .btn-black { background: black; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; text-decoration: none; display: block; text-align: center; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #eee; border-radius: 10px; box-sizing: border-box; }
+        .tab-btn { background: #333; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; margin-right: 5px; font-size: 13px; }
+        .tab-btn.active { background: #fff; color: #FF8C42; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <span>HOLA, {{ usuario.nombre_completo or 'COMERCIO' }}</span>
+        <a href="/logout" style="color:#FF8C42; text-decoration: none; font-weight: bold;">SALIR</a>
+    </div>
+
+    <div class="logo-central">HAY TRABAJO</div>
+
+    <div class="container">
+        <details class="card">
+            <summary style="font-weight: bold; cursor: pointer;">⚙️ EDITAR PERFIL DEL COMERCIO</summary>
+            <form action="/editar_perfil" method="POST" enctype="multipart/form-data">
+                <input type="text" name="nombre" value="{{ usuario.nombre_completo }}" placeholder="Nombre del Comercio / Local">
+                <input type="text" name="direccion" value="{{ usuario.direccion }}" placeholder="Dirección Física">
+                <input type="text" name="whatsapp" value="{{ usuario.whatsapp }}" placeholder="WhatsApp de Contacto">
+                <select name="rubro">
+                    {% for r in rubros %}<option value="{{ r }}" {% if usuario.rubro == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
+                </select>
+                <label>Logo del Comercio:</label> <input type="file" name="foto" accept="image/*">
+                <button type="submit" class="btn-black">ACTUALIZAR DATOS</button>
+            </form>
+        </details>
+
+        <div class="card" style="display:flex; align-items:center; gap:20px;">
+            <img src="{{ url_for('static', filename='uploads/' + usuario.foto_perfil) }}" style="width:100px; height:100px; border-radius:15px; border: 3px solid black;">
+            <div>
+                <h2 style="margin:0;">{{ usuario.nombre_completo }}</h2>
+                <p style="margin:5px 0;">Rubro: {{ usuario.rubro }} | Dir: {{ usuario.direccion }}</p>
+                <p style="margin:0; font-weight: bold;">WA: {{ usuario.whatsapp }}</p>
+            </div>
+        </div>
+
+        {% if usuario.esta_suscrito %}
+            <div class="card">
+                <h3>POSTULAR / OFRECER UN TRABAJO</h3>
+                <form action="/publicar_empleo" method="POST">
+                    <input type="text" name="titulo" placeholder="Título de la vacante (ej: Mozo Fines de Semana)" required>
+                    <select name="rubro">{% for r in rubros %}<option value="{{ r }}">{{ r }}</option>{% endfor %}</select>
+                    <textarea name="descripcion" placeholder="Requisitos, horarios y sueldo..." required></textarea>
+                    <button type="submit" class="btn-black">PUBLICAR VACANTE</button>
+                </form>
+            </div>
+
+            <h3 style="color:white; text-shadow: 1px 1px black;">MIS BÚSQUEDAS Y POSTULACIONES</h3>
+            {% for a in usuario.avisos %}
+            <div class="card">
+                <div style="display:flex; justify-content:space-between;">
+                    <strong>{{ a.titulo.upper() }}</strong>
+                    <div>
+                        <a href="/gestion_empleo/{{ a.id }}/pausar" style="font-size:12px;">{% if a.activo %}PAUSAR{% else %}ACTIVAR{% endif %}</a> |
+                        <a href="/gestion_empleo/{{ a.id }}/borrar" style="color:red; font-size:12px;">ELIMINAR</a>
+                    </div>
+                </div>
+                <hr>
+                <small>Postulantes registrados:</small>
+                {% for p in a.aplicantes %}
+                <div style="background:#f9f9f9; padding:15px; border-radius:10px; margin-top:10px; border-left: 5px solid black;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="{{ url_for('static', filename='uploads/' + p.candidato.foto_perfil) }}" style="width:50px; height:50px; border-radius:50%;">
+                        <div>
+                            <strong>{{ p.candidato.nombre_completo }}</strong> (DNI: {{ p.candidato.dni }})<br>
+                            {% if p.candidato.archivo_cv %}<a href="{{ url_for('static', filename='uploads/' + p.candidato.archivo_cv) }}" target="_blank" style="font-size:11px;">📂 VER CV DEL EMPLEADO</a>{% endif %}
+                        </div>
+                    </div>
+                    <p style="font-style: italic; font-size: 13px;">"{{ p.servicio_ofrecido }}"</p>
+                    <a href="https://wa.me/{{ p.candidato.whatsapp }}" class="btn-black" style="background:#25D366; font-size: 12px; width: auto; display: inline-block; padding: 5px 15px;">MANDAR WHATSAPP</a>
+                </div>
+                {% else %}
+                <p style="font-size:11px; color:gray;">Sin postulantes aún.</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <h3 style="color:white; text-shadow: 1px 1px black;">TALENTOS DISPONIBLES</h3>
+            <div style="margin-bottom: 15px;">
+                <a href="/perfil?rubro=Todos" class="tab-btn {% if rubro_sel == 'Todos' %}active{% endif %}">Todos</a>
+                {% for r in rubros %}
+                <a href="/perfil?rubro={{ r }}" class="tab-btn {% if rubro_sel == r %}active{% endif %}">{{ r }}</a>
+                {% endfor %}
+            </div>
+            {% for t in talentos %}
+            <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <img src="{{ url_for('static', filename='uploads/' + t.foto_perfil) }}" style="width:60px; height:60px; border-radius:50%; object-fit:cover;">
+                    <div>
+                        <strong>{{ t.nombre_completo }}</strong><br>
+                        <small>{{ t.rubro }}</small><br>
+                        {% if t.archivo_cv %}<a href="{{ url_for('static', filename='uploads/' + t.archivo_cv) }}" target="_blank" style="font-size:11px;">📄 Ver CV</a>{% endif %}
+                    </div>
+                </div>
+                <a href="https://wa.me/{{ t.whatsapp }}" class="btn-black" style="background:#25D366; width: auto; padding: 10px 20px;">CONTACTAR</a>
+            </div>
+            {% endfor %}
+
+        {% else %}
+            <div class="card" style="background:black; color:white; text-align:center; padding:40px;">
+                <h2>ACTIVA TU SUSCRIPCIÓN</h2>
+                <p>Podrás publicar trabajos y contactar a los nuevos talentos.</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

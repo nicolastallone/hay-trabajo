@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Hay Trabajo</title>
+    <style>
+        :root { --orange: #FF8C42; --dark: #2D3436; }
+        body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, var(--orange), #E67E22); margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .card { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); width: 100%; max-width: 400px; }
+        h2 { color: var(--dark); text-align: center; margin-bottom: 25px; }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn { background: var(--orange); color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn:hover { background: var(--dark); }
+        .link { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>ÚNETE A 🍊<br>HAY TRABAJO</h2>
+        <form action="/registro_proceso" method="POST">
+            <select name="tipo">
+                <option value="empleado">Busco Trabajo (Empleado)</option>
+                <option value="comercio">Busco Personal (Comercio)</option>
+            </select>
+            <input type="text" name="nombre" placeholder="Nombre completo / Local" required>
+            <input type="email" name="email" placeholder="Correo electrónico" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <input type="text" name="whatsapp" placeholder="WhatsApp (Ej: 54911...)" required>
+            <button type="submit" class="btn">CREAR CUENTA</button>
+        </form>
+        <a href="/login" class="link">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+</body>
+</html>

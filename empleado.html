@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>HAY TRABAJO - Empleado</title>
+    <style>
+        body { font-family: 'Tahoma', sans-serif; background: #FF8C42; color: #333; margin: 0; }
+        .nav { background: #000; color: #fff; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .logo-central { text-align: center; font-size: 30px; font-weight: bold; color: white; padding: 20px; text-shadow: 2px 2px #000; }
+        .container { max-width: 900px; margin: auto; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .tab-btn { background: #333; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; margin-right: 5px; font-size: 13px; }
+        .tab-btn.active { background: #fff; color: #FF8C42; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: 2px solid #eee; border-radius: 10px; font-family: 'Tahoma'; }
+        .btn-black { background: black; color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
+        .profile-header { display: flex; align-items: center; gap: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+        .locked { background: #000; color: #fff; padding: 30px; text-align: center; border-radius: 15px; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <span>HOLA, {{ usuario.nombre_completo or 'USUARIO' }}</span>
+        <a href="/logout" style="color:#FF8C42; text-decoration: none; font-weight: bold;">SALIR</a>
+    </div>
+
+    <div class="logo-central">HAY TRABAJO</div>
+
+    <div class="container">
+        <details class="card">
+            <summary style="font-weight: bold; cursor: pointer;">⚙️ EDITAR MI PERFIL</summary>
+            <form action="/editar_perfil" method="POST" enctype="multipart/form-data">
+                <input type="text" name="nombre" value="{{ usuario.nombre_completo }}" placeholder="Nombre y Apellido">
+                <input type="text" name="dni" value="{{ usuario.dni }}" placeholder="DNI">
+                <input type="text" name="whatsapp" value="{{ usuario.whatsapp }}" placeholder="WhatsApp">
+                <input type="email" name="email_fake" value="{{ usuario.email }}" disabled>
+                <select name="rubro">
+                    {% for r in rubros %}<option value="{{ r }}" {% if usuario.rubro == r %}selected{% endif %}>{{ r }}</option>{% endfor %}
+                </select>
+                <textarea name="descripcion" placeholder="Sobre mí / Mi experiencia">{{ usuario.descripcion_perfil }}</textarea>
+                <label>Foto de Perfil:</label> <input type="file" name="foto" accept="image/*">
+                <label>Subir CV (PDF):</label> <input type="file" name="cv" accept=".pdf">
+                <button type="submit" class="btn-black">GUARDAR CAMBIOS</button>
+            </form>
+        </details>
+
+        <div class="card">
+            <div class="profile-header">
+                <img src="{{ url_for('static', filename='uploads/' + usuario.foto_perfil) }}" style="width:100px; height:100px; border-radius:50%; border: 3px solid #FF8C42;">
+                <div>
+                    <h2 style="margin:0;">{{ usuario.nombre_completo }}</h2>
+                    <p style="margin:5px 0;">DNI: {{ usuario.dni }} | WA: {{ usuario.whatsapp }}</p>
+                    <p style="margin:0; font-size: 13px; color: #666;">Rubro: {{ usuario.rubro }}</p>
+                    {% if usuario.archivo_cv %}<a href="{{ url_for('static', filename='uploads/' + usuario.archivo_cv) }}" target="_blank">📄 Ver mi CV cargado</a>{% endif %}
+                </div>
+            </div>
+            <p style="margin-top: 15px;">{{ usuario.descripcion_perfil }}</p>
+        </div>
+
+        {% if usuario.esta_suscrito %}
+            <div style="margin-bottom: 15px;">
+                <a href="/perfil?rubro=Todos" class="tab-btn {% if rubro_sel == 'Todos' %}active{% endif %}">Todos</a>
+                {% for r in rubros %}
+                <a href="/perfil?rubro={{ r }}" class="tab-btn {% if rubro_sel == r %}active{% endif %}">{{ r }}</a>
+                {% endfor %}
+            </div>
+
+            <h3 style="color: white; text-shadow: 1px 1px black;">VACANTES DISPONIBLES</h3>
+            {% for e in empleos %}
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="{{ url_for('static', filename='uploads/' + e.creador.foto_perfil) }}" style="width:40px; height:40px; border-radius:50%;">
+                        <strong>{{ e.creador.nombre_completo }} - {{ e.titulo }}</strong>
+                    </div>
+                    <span style="background: #FF8C42; color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px;">{{ e.rubro }}</span>
+                </div>
+                <p style="font-size: 14px; color: #444;">{{ e.descripcion }}</p>
+                <hr>
+                {% if e.id in ids_postulados %}
+                    <div style="text-align: center;">
+                        <span style="color: green; font-weight: bold;">¡YA TE POSTULASTE!</span><br><br>
+                        <a href="https://wa.me/{{ e.creador.whatsapp }}" class="btn-black" style="background:#25D366; text-decoration: none; display: inline-block; width: auto; padding: 10px 20px;">HABLAR AL WHATSAPP</a>
+                        <br><br><a href="/despostular/{{ e.id }}" style="color:red; font-size: 11px;">Cancelar postulación</a>
+                    </div>
+                {% else %}
+                    <form action="/postular/{{ e.id }}" method="POST">
+                        <textarea name="servicio" placeholder="Contale al comercio por qué sos el indicado..." required></textarea>
+                        <button type="submit" class="btn-black">POSTULARME / OFRECER SERVICIO</button>
+                    </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="locked">
+                <h2>ACTIVA TU SUSCRIPCIÓN</h2>
+                <p>Y podrás postularte a las vacantes y ver los nuevos talentos del mercado.</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
