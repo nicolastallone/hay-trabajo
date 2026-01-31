@@ -65,9 +65,12 @@ def home():
     return render_template('registro.html')
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login_page():
+    if request.method == 'POST':
+        return login_proceso()
     return render_template('login.html')
+
 
 
 @app.route('/registro_proceso', methods=['POST'])
@@ -269,5 +272,6 @@ if __name__ == '__main__':
 
     # Para Render / producción
     app.run(host="0.0.0.0", port=5000)
+
 
 
